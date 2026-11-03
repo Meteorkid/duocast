@@ -1,0 +1,268 @@
+<Window x:Class="DuoCast.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DuoCast · 高级设置"
+        Width="640" Height="672"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" WindowStartupLocation="CenterOwner"
+        TextOptions.TextFormattingMode="Display"
+        FontFamily="Microsoft YaHei UI">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="SurfaceBrush" Color="#161513" />
+        <SolidColorBrush x:Key="HairlineBrush" Color="#1FFFFFFF" />
+        <SolidColorBrush x:Key="GoldHairlineBrush" Color="#33E8C268" />
+
+        <Style x:Key="GhostButton" TargetType="Button">
+            <Setter Property="Foreground" Value="#C9C3BA" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="#24FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#1AFFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SegButton" TargetType="Button" BasedOn="{StaticResource GhostButton}">
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="13,0" />
+            <Setter Property="Margin" Value="0,0,-1,0" />
+            <Setter Property="FontFamily" Value="Consolas" />
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="#0F0E0E" />
+            <Setter Property="Background" Value="#F2F2F2" />
+            <Setter Property="FontSize" Value="11.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#F2F2F2" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#C9C3BA" />
+            <Setter Property="FontSize" Value="11.5" />
+        </Style>
+
+        <Style x:Key="HintText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#6E6862" />
+            <Setter Property="FontSize" Value="10.5" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="LineHeight" Value="16" />
+        </Style>
+
+        <Style x:Key="MonoValue" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#E2DDD5" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontFamily" Value="Consolas" />
+            <Setter Property="HorizontalAlignment" Value="Right" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#0F0E0E" BorderBrush="#2BFFFFFF" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="52" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="56" />
+            </Grid.RowDefinitions>
+
+            <!-- 标题栏（可拖动） -->
+            <Border Grid.Row="0" Background="#131210" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                <Grid Margin="20,0,10,0">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="高级设置" Foreground="#F2F2F2" FontSize="13.5" FontWeight="SemiBold" />
+                        <Border Width="1" Height="14" Background="#2E2B27" Margin="12,0" />
+                        <TextBlock Text="缓冲 · 时钟同步 · 文件播放" Foreground="#8A857F" FontSize="11"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+                    <Button x:Name="BtnClose" Content="×" Style="{StaticResource GhostButton}" Width="30"
+                            Height="28" Padding="0" FontSize="15" HorizontalAlignment="Right"
+                            VerticalAlignment="Center" Click="BtnClose_Click" />
+                </Grid>
+            </Border>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20,18,20,6">
+                <StackPanel>
+
+                    <!-- 缓冲区 -->
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource HairlineBrush}"
+                            BorderThickness="1" Padding="18,16">
+                        <StackPanel>
+                            <TextBlock Text="缓冲区" Style="{StaticResource SectionTitle}" />
+                            <Grid Margin="0,14,0,0">
+                                <TextBlock Text="渲染缓冲（毫秒）" Style="{StaticResource FieldLabel}"
+                                           VerticalAlignment="Center" />
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button x:Name="Buf5" Tag="5" Content="5" Style="{StaticResource SegButton}"
+                                            Click="BufferSeg_Click" />
+                                    <Button x:Name="Buf10" Tag="10" Content="10" Style="{StaticResource SegButton}"
+                                            Click="BufferSeg_Click" />
+                                    <Button x:Name="Buf20" Tag="20" Content="20" Style="{StaticResource SegButton}"
+                                            Click="BufferSeg_Click" />
+                                    <Button x:Name="Buf40" Tag="40" Content="40" Style="{StaticResource SegButton}"
+                                            Click="BufferSeg_Click" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Margin="0,12,0,0" Style="{StaticResource HintText}"
+                                       Text="值越小延迟越低，也越容易被系统抢占而欠载。运行中修改会重建两条输出流，出现一次极短的断流，随后自动重新预灌。" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 时钟同步 -->
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource HairlineBrush}"
+                            BorderThickness="1" Padding="18,16" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="时钟同步" Style="{StaticResource SectionTitle}" />
+
+                            <Grid Margin="0,14,0,0">
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="ASRC 漂移补偿" Style="{StaticResource FieldLabel}" />
+                                    <TextBlock Margin="0,3,0,0" Style="{StaticResource HintText}"
+                                               Text="以缓冲水位为误差信号，把读取速率修正限制在 ±0.2%（±2000 ppm）" />
+                                </StackPanel>
+                                <Button x:Name="BtnDrift" Content="开启" Style="{StaticResource GhostButton}"
+                                        Height="28" Padding="15,0" HorizontalAlignment="Right"
+                                        VerticalAlignment="Center" Click="BtnDrift_Click" />
+                            </Grid>
+
+                            <Border Height="1" Background="#1AFFFFFF" Margin="0,15,0,0" />
+
+                            <Grid Margin="0,12,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="92" />
+                                    <ColumnDefinition Width="92" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="实时状态" Foreground="#7A746C" FontSize="10.5"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="A · 主控" Foreground="#F2F2F2" FontSize="10.5"
+                                           HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="2" Text="B · 辅助" Foreground="#E8C268" FontSize="10.5"
+                                           HorizontalAlignment="Right" />
+                            </Grid>
+
+                            <Grid Margin="0,9,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="92" />
+                                    <ColumnDefinition Width="92" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="速率修正" Foreground="#8A857F" FontSize="10.5"
+                                           VerticalAlignment="Center" />
+                                <TextBlock x:Name="DriftA" Grid.Column="1" Text="—" Style="{StaticResource MonoValue}" />
+                                <TextBlock x:Name="DriftB" Grid.Column="2" Text="—" Style="{StaticResource MonoValue}" />
+                            </Grid>
+
+                            <Grid Margin="0,7,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="92" />
+                                    <ColumnDefinition Width="92" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="缓冲水位" Foreground="#8A857F" FontSize="10.5"
+                                           VerticalAlignment="Center" />
+                                <TextBlock x:Name="LevelA" Grid.Column="1" Text="—" Style="{StaticResource MonoValue}" />
+                                <TextBlock x:Name="LevelB" Grid.Column="2" Text="—" Style="{StaticResource MonoValue}" />
+                            </Grid>
+
+                            <Grid Margin="0,7,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="92" />
+                                    <ColumnDefinition Width="92" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="累计欠载" Foreground="#8A857F" FontSize="10.5"
+                                           VerticalAlignment="Center" />
+                                <TextBlock x:Name="UnderA" Grid.Column="1" Text="—" Style="{StaticResource MonoValue}" />
+                                <TextBlock x:Name="UnderB" Grid.Column="2" Text="—" Style="{StaticResource MonoValue}" />
+                            </Grid>
+
+                            <TextBlock x:Name="DriftHint" Margin="0,12,0,0" Style="{StaticResource HintText}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- 本地文件 -->
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource HairlineBrush}"
+                            BorderThickness="1" Padding="18,16" Margin="0,12,0,0">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="循环播放" Style="{StaticResource FieldLabel}" />
+                                <TextBlock Margin="0,3,0,0" Style="{StaticResource HintText}"
+                                           Text="仅对「本地文件」输入源生效，下次开始分发时应用" />
+                            </StackPanel>
+                            <Button x:Name="BtnLoop" Content="循环" Style="{StaticResource GhostButton}"
+                                    Height="28" Padding="15,0" HorizontalAlignment="Right"
+                                    VerticalAlignment="Center" Click="BtnLoop_Click" />
+                        </Grid>
+                    </Border>
+
+                    <!-- 蓝牙提示 -->
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource GoldHairlineBrush}"
+                            BorderThickness="1" Padding="18,16" Margin="0,12,0,0">
+                        <StackPanel>
+                            <TextBlock Text="蓝牙输出的硬限制" Foreground="#E8C268" FontSize="11.5"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Margin="0,9,0,0" Style="{StaticResource HintText}"
+                                       Text="多数蓝牙芯片同一时刻只承载一路 A2DP 立体声流。两副蓝牙耳机同时输出时，第二路通常无声，即使日志显示已连接。可靠做法是至少一路走 USB 声卡或有线接口。启动分发时若两端点名称都像蓝牙设备，程序会先要求确认。" />
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- 底部操作 -->
+            <Border Grid.Row="2" Background="#131210" BorderBrush="#1AFFFFFF" BorderThickness="0,1,0,0">
+                <Grid Margin="20,0">
+                    <Button x:Name="BtnDefaults" Content="恢复默认" Style="{StaticResource GhostButton}"
+                            Height="30" Padding="14,0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                            Click="BtnDefaults_Click" />
+                    <Button Content="完成" Style="{StaticResource PrimaryButton}" Height="32" Padding="26,0"
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Click="BtnClose_Click" />
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

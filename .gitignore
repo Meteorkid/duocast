@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+._*
+
+# 本地工作区：含个人笔记与项目记忆，不进公开仓库
+.workbuddy/
+
+# SwiftPM / Xcode 构建产物
+duocast-mac/.build/
+duocast-mac/build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+
+# Go 构建产物
+beam/dist/
+beam/release/
+*.exe
+
+# .NET
+[Bb]in/
+[Oo]bj/
+
+# 杂项
+__pycache__/
+*.pyc
+*.log

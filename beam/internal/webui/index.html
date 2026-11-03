@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>beam · 收文件</title>
+<style>
+  :root {
+    --bg: #0F0E0E;
+    --surface: #161513;
+    --line: rgba(255,255,255,.11);
+    --strong: rgba(255,255,255,.18);
+    --text: #F2F2F2;
+    --quiet: #C9C3BA;
+    --muted: #6E6862;
+    --gold: #E8C268;
+    --ok: #7DD9A6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 32px 20px;
+    background: var(--bg); color: var(--text);
+    font: 13px/1.5 -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    display: flex; justify-content: center;
+  }
+  .wrap { width: 100%; max-width: 720px; }
+  header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 22px; }
+  .brand { font-size: 18px; font-weight: 600; letter-spacing: .02em; }
+  .sub { color: var(--muted); font-size: 11.5px; }
+  .badge { margin-left: auto; font-size: 11.5px; color: var(--quiet);
+           border: 1px solid var(--strong); padding: 5px 10px; }
+  .card { background: var(--surface); border: 1px solid var(--line);
+          padding: 18px; margin-bottom: 14px; }
+  h2 { margin: 0 0 14px; font-size: 12px; font-weight: 600; color: var(--quiet);
+       letter-spacing: .08em; text-transform: uppercase; }
+  .files { list-style: none; margin: 0 0 16px; padding: 0; }
+  .files li { display: flex; gap: 12px; padding: 7px 0;
+              border-bottom: 1px solid var(--line); font-size: 12.5px; }
+  .files li:last-child { border-bottom: 0; }
+  .files .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .files .size { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .actions { display: flex; gap: 10px; }
+  button { font: inherit; cursor: pointer; border: 1px solid var(--strong);
+           background: transparent; color: var(--quiet); padding: 0 16px; height: 32px; }
+  button:hover { background: rgba(255,255,255,.06); }
+  button.primary { background: var(--text); color: #0F0E0E; border-color: transparent; font-weight: 500; }
+  button.primary:hover { background: #fff; }
+  .row { display: flex; justify-content: space-between; font-size: 12px;
+         color: var(--quiet); margin-bottom: 10px; }
+  .bar { height: 6px; background: #211F1B; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--gold); transition: width .15s; }
+  .form { display: flex; gap: 8px; flex-wrap: wrap; }
+  input { flex: 1; min-width: 200px; height: 32px; padding: 0 10px;
+          background: rgba(0,0,0,.35); border: 1px solid var(--strong);
+          color: var(--text); font: inherit; }
+  input::placeholder { color: var(--muted); }
+  .drop { border: 1px dashed var(--strong); padding: 22px; text-align: center;
+          cursor: pointer; transition: background .15s, border-color .15s; }
+  .drop strong { display: block; font-size: 13px; color: var(--quiet); font-weight: 500; }
+  .drop span { display: block; margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .drop:hover, .drop.over { background: rgba(232,194,104,.06); border-color: var(--gold); }
+  select { height: 32px; padding: 0 8px; background: rgba(0,0,0,.35);
+           border: 1px solid var(--strong); color: var(--text); font: inherit; }
+  .hint { color: var(--muted); font-size: 11px; margin: 12px 0 0; }
+  code { font-family: ui-monospace, "SF Mono", Consolas, monospace; color: var(--quiet); }
+  #history { list-style: none; margin: 0; padding: 0; font-size: 12px; }
+  #history li { padding: 6px 0; border-bottom: 1px solid var(--line); color: var(--quiet); }
+  #history li:last-child { border-bottom: 0; }
+  #history li.bad { color: var(--gold); }
+  footer { margin-top: 18px; color: var(--muted); font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">beam</div>
+    <div class="sub">中转传输 · 端到端加密</div>
+    <div class="badge" id="status">连接中…</div>
+  </header>
+
+  <section class="card" id="offerCard" style="display:none">
+    <h2>收到传输请求</h2>
+    <ul class="files" id="offerList"></ul>
+    <div class="actions">
+      <button class="primary" id="accept">接收</button>
+      <button id="decline">拒绝</button>
+    </div>
+  </section>
+
+  <section class="card" id="progressCard" style="display:none">
+    <div class="row"><span id="progressLabel">传输中</span><span id="progressNums"></span></div>
+    <div class="bar"><i id="progressBar"></i></div>
+  </section>
+
+  <section class="card">
+    <h2>发送文件</h2>
+    <div class="drop" id="drop">
+      <strong>把文件拖到这里</strong>
+      <span>或点击选择文件发送</span>
+    </div>
+    <div class="form" style="margin-top:12px">
+      <input id="path" placeholder="文件完整路径，如 C:\Users\me\Desktop\a.zip">
+      <select id="peer" style="max-width:190px">
+        <option value="">附近设备…</option>
+      </select>
+      <input id="room" placeholder="或填房间码" style="max-width:150px">
+      <button class="primary" id="send">按路径发送</button>
+    </div>
+    <p class="hint">拖拽走浏览器上传（会多一次临时落盘），大文件建议填路径直发，不经浏览器、不额外占磁盘。网线直连时选「附近设备」，跨网络时填对方房间码。</p>
+  </section>
+
+  <section class="card">
+    <h2>最近</h2>
+    <ul id="history"><li>暂无记录</li></ul>
+  </section>
+
+  <footer>本机房间 <code id="roomCode">—</code> · 验证码 <code id="sas">—</code>（应与对方显示一致）</footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+function human(n) {
+  if (!n) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let value = n, i = 0;
+  while (value >= 1024 && i < units.length - 1) { value /= 1024; i++; }
+  return value.toFixed(i === 0 ? 0 : 1) + ' ' + units[i];
+}
+
+async function post(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {})
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    alert(text || ('请求失败: ' + res.status));
+  }
+}
+
+function renderOffer(offer) {
+  const card = $('offerCard');
+  if (!offer) { card.style.display = 'none'; return; }
+
+  const list = $('offerList');
+  list.replaceChildren();
+  for (const file of offer.files) {
+    const li = document.createElement('li');
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = file.name;          // textContent：文件来自对端，绝不能当 HTML 解析
+    const size = document.createElement('span');
+    size.className = 'size';
+    size.textContent = human(file.size);
+    li.append(name, size);
+    list.append(li);
+  }
+  card.style.display = 'block';
+}
+
+function renderProgress(p) {
+  const card = $('progressCard');
+  if (!p || !p.active) { card.style.display = 'none'; return; }
+
+  card.style.display = 'block';
+  $('progressLabel').textContent = p.label || '传输中';
+  const percent = p.total > 0 ? (p.done / p.total * 100) : 0;
+  $('progressNums').textContent = human(p.done) + ' / ' + human(p.total) + '  ' + percent.toFixed(1) + '%';
+  $('progressBar').style.width = Math.min(100, percent) + '%';
+}
+
+function renderHistory(items) {
+  const list = $('history');
+  list.replaceChildren();
+  if (!items.length) { list.innerHTML = '<li>暂无记录</li>'; return; }
+
+  for (const item of items) {
+    const li = document.createElement('li');
+    if (!item.ok) li.className = 'bad';
+    li.textContent = item.text;
+    list.append(li);
+  }
+}
+
+async function tick() {
+  try {
+    const res = await fetch('/api/state', { cache: 'no-store' });
+    const s = await res.json();
+
+    $('status').textContent = s.status || '空闲';
+    $('sas').textContent = s.sas || '—';
+    $('roomCode').textContent = s.room || '—';
+    renderOffer(s.offer);
+    renderProgress(s.progress);
+    renderHistory(s.history || []);
+  } catch (err) {
+    $('status').textContent = '与本地服务断开';
+  }
+}
+
+$('accept').addEventListener('click', () => post('/api/answer', { accept: true }));
+$('decline').addEventListener('click', () => post('/api/answer', { accept: false }));
+let lastPeers = '';
+
+async function refreshPeers() {
+  try {
+    const res = await fetch('/api/peers', { cache: 'no-store' });
+    const peers = await res.json() || [];
+    const signature = JSON.stringify(peers);
+    if (signature === lastPeers) return;
+    lastPeers = signature;
+
+    const select = $('peer');
+    const current = select.value;
+    select.replaceChildren(new Option('附近设备…', ''));
+
+    for (const peer of peers) {
+      select.append(new Option(peer.Name + ' · ' + peer.Addr, peer.Addr));
+    }
+    if (current) select.value = current;
+  } catch (err) { /* 发现失败不影响转发 */ }
+}
+
+const drop = $('drop');
+const fileInput = document.createElement('input');
+fileInput.type = 'file';
+fileInput.style.display = 'none';
+document.body.append(fileInput);
+
+drop.addEventListener('click', () => fileInput.click());
+drop.addEventListener('dragover', (event) => {
+  event.preventDefault();
+  drop.classList.add('over');
+});
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', (event) => {
+  event.preventDefault();
+  drop.classList.remove('over');
+  const file = event.dataTransfer.files && event.dataTransfer.files[0];
+  if (file) uploadFile(file);
+});
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files && fileInput.files[0];
+  if (file) uploadFile(file);
+});
+
+async function uploadFile(file) {
+  const peer = $('peer').value.trim();
+  const room = $('room').value.trim();
+
+  if (!peer && !room) {
+    alert('先在「附近设备」里选对方，或填写对方房间码');
+    return;
+  }
+
+  drop.querySelector('strong').textContent = '正在提交 ' + file.name + ' …';
+
+  const form = new FormData();
+  form.append('file', file, file.name);
+  form.append('peer', peer);
+  form.append('room', room);
+
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: form });
+    if (!res.ok) {
+      alert(await res.text());
+      drop.querySelector('strong').textContent = '把文件拖到这里';
+      return;
+    }
+    drop.querySelector('strong').textContent = '已提交，等待对方确认';
+  } catch (err) {
+    alert('上传失败: ' + err);
+    drop.querySelector('strong').textContent = '把文件拖到这里';
+  }
+}
+
+$('send').addEventListener('click', () => {
+  const path = $('path').value.trim();
+  const addr = $('peer').value.trim();
+  const room = $('room').value.trim();
+
+  if (!path) { alert('需要文件路径'); return; }
+  if (!addr && !room) { alert('请选择附近设备，或填写对方房间码'); return; }
+
+  post('/api/send', { path, addr, room });
+});
+
+tick();
+refreshPeers();
+setInterval(tick, 600);
+setInterval(refreshPeers, 5000);
+</script>
+</body>
+</html>
