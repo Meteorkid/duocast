@@ -1,5 +1,7 @@
 # DuoCast for macOS
 
+![DuoCast 界面](docs/screenshot.png)
+
 同一路音频同时送到多个输出设备，每一路各自独立的音量、延迟与 10 段均衡。
 
 这是原生 macOS 版本：SwiftUI 界面 + CoreAudio 多输出（每路一个 AUHAL）+ CoreAudio Process Tap 采集系统音频。与仓库里的 Windows 版（C# / WPF / NAudio）并列为两个独立工程——音频设备层本来就是平台专有的，强行共用一套 UI 框架得不到复用，反而让两边都难调试。
