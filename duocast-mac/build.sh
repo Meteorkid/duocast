@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 CONFIG="${1:-release}"
-VERSION="${DUOCAST_VERSION:-0.1.0}"
+VERSION="${DUOCAST_VERSION:-0.1.1}"
 swift build -c "$CONFIG" --disable-sandbox
 
 BIN=".build/$CONFIG/DuoCast"
@@ -14,6 +14,12 @@ APP="build/DuoCast.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN" "$APP/Contents/MacOS/DuoCast"
+
+# 图标：没有它 Finder 和 Dock 只会显示一个通用占位方块。
+if [ ! -f AppIcon.icns ]; then
+    ./scripts/make-icon.sh
+fi
+cp AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -24,6 +30,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleDisplayName</key><string>DuoCast</string>
     <key>CFBundleIdentifier</key><string>com.duocast.app</string>
     <key>CFBundleExecutable</key><string>DuoCast</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
+    <key>CFBundleIconName</key><string>AppIcon</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>__VERSION__</string>
     <key>CFBundleVersion</key><string>1</string>
