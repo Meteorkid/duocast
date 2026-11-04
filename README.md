@@ -181,7 +181,7 @@ duocast/
 ├─ duocast-mac/          macOS 客户端（SwiftUI + CoreAudio），当前主力
 │  ├─ Sources/DuoCast/   Audio/ 是引擎，UI/ 是界面
 │  └─ README.md          实现细节、踩坑记录、每一步的实测数字
-├─ duocast/              Windows 客户端（C# / .NET 8 / WPF / NAudio）
+├─ duocast/              Windows 客户端（C# / .NET 8 / WPF / NAudio），功能对齐规格见 PARITY-SPEC.md
 ├─ beam/                 跨网络中转传文件的实验工具（Go），与本产品解耦
 └─ docs/                 研究笔记：双机链路测量、AWDL 可行性、实验协议
 ```
