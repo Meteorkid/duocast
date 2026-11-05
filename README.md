@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="duocast-mac/docs/icon.png" width="104" alt="DuoCast 应用图标">
+</p>
+
 # DuoCast
 
 **一台电脑，多副耳机，同一首歌。**
